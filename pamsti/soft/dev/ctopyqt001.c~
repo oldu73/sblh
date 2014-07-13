@@ -14,7 +14,7 @@ int  main()
 	
 	int fdw, fdr, i, selectionMenu = 0;
 	char buf[MAX_BUF];
-	char* textInitCon = "Hi";
+	char* textInitCon = "hello";
 	char* myfifow = "ctopyfifo";
 	char* myfifor = "pytocfifo";
 

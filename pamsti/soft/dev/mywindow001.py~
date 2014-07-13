@@ -39,6 +39,7 @@ class myguiapp(QWidget):
 	self.w2.button1.move(150,175)
 	  
 	self.connect(self.w2.button1, SIGNAL("clicked()"), self.writeAllData)
+	# self.connect(self.w2.button1, SIGNAL("clicked()"), self.w2.close)  
 	
     def setw1label1(self):
 	self.w1label1.setText(self.trUtf8("coucou..."))

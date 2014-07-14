@@ -1,13 +1,15 @@
 #! /usr/bin/python
 #-*-coding: utf-8 -*-
-
+import os,sys,MySQLdb
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from PyQt4.QtCore import QSocketNotifier, SIGNAL
-import os,sys
 
 myfifor = "ctopyfifo"
 myfifow = "pytocfifo"
+
+db = MySQLdb.connect(host="localhost", user="root", passwd="root", db="pamsti001")
+cur = db.cursor()
 
 class myguiapp(QWidget):
     def __init__(self):
@@ -24,7 +26,7 @@ class myguiapp(QWidget):
         self.w1button2.move(150,175)
 
 	self.connect(self.w1button1, SIGNAL("clicked()"), self.setw1label1)
-	self.connect(self.w1button2, SIGNAL("clicked()"), qApp, SLOT("quit()"))
+	self.connect(self.w1button2, SIGNAL("clicked()"), self.closeAll)
 	
 	self.fdr = os.open(myfifor, os.O_RDONLY)
 	self.notifier_r = QSocketNotifier(self.fdr, QSocketNotifier.Read)
@@ -39,7 +41,6 @@ class myguiapp(QWidget):
 	self.w2.button1.move(150,175)
 	  
 	self.connect(self.w2.button1, SIGNAL("clicked()"), self.writeAllData)
-	# self.connect(self.w2.button1, SIGNAL("clicked()"), self.w2.close)  
 	
     def setw1label1(self):
 	self.w1label1.setText(self.trUtf8("coucou..."))
@@ -49,8 +50,13 @@ class myguiapp(QWidget):
 	while True:
 	  data = os.read(self.fdr, bufferSize)
 	  if not data:
-	    break	
-	  self.w2.label1.setText(self.trUtf8(data))
+	    break   
+	  cur.execute("SELECT firstname, lastname FROM person001 WHERE rfid = %s", self.trUtf8(data))
+	  person = cur.fetchone()
+	  
+	  # person is a tuple
+	  
+	  self.w2.label1.setText(self.trUtf8(str(person[0]) + " " + str(person[1])))
 	  self.w2.show()
 
     def writeAllData(self):
@@ -59,3 +65,11 @@ class myguiapp(QWidget):
 	  os.close(fdw)
 	  self.w2.close()
           
+    def closeAll(self):
+	  # Close all cursors
+	  cur.close()
+	  # Close all databases
+	  db.close()	  
+	  qApp.quit()
+
+

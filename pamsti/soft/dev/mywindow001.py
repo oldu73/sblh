@@ -34,7 +34,7 @@ class myguiapp(QWidget):
 	
 	self.w2=QWidget()
 	self.w2.label1=QLabel(self.trUtf8("Salut, le monde!"), self.w2)
-	self.w2.label1.setFixedWidth(100)
+	self.w2.label1.setFixedWidth(150)
 	self.w2.label1.move(150,75)
 	  
 	self.w2.button1=QPushButton(self.trUtf8("OK"), self.w2)

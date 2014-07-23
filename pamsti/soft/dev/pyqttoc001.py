@@ -1,9 +1,10 @@
 #! /usr/bin/python
 #-*-coding: utf-8 -*-
 from PyQt4.QtGui import *
-import mywindow001, sys
+import mywindow001, sys, os
 
 def main(args):
+    os.system('clear')
     a=QApplication(args)
     # Création d'un widget qui servira de fenêtre
     mainapp=mywindow001.myguiapp()

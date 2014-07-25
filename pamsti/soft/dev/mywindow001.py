@@ -25,12 +25,15 @@ cur4 = db.cursor()
 projlist = None
 readdata = None
 
+clickonkeyb = False
+
 widwith = 320
 widheight = 240
 
 class myguiapp(QWidget):
     def __init__(self):
 	global projlist
+	global clickonkeyb
 	
         QWidget.__init__(self)
         
@@ -42,7 +45,7 @@ class myguiapp(QWidget):
         self.w1label1.move(10,10)
 
         self.w1button2=QPushButton(self.trUtf8("Quit"), self)
-        self.w1button2.move(150,175)
+        self.w1button2.move(10,215)
         
         self.setFixedSize(widwith,widheight)
         self.move(hpos,vpos)
@@ -59,14 +62,13 @@ class myguiapp(QWidget):
 	self.w2.move(hpos,vpos)
 	self.w2.label1=QLabel(self.trUtf8("init wait..."), self.w2)
 	self.w2.label1.setFixedWidth(150)
-	self.w2.label1.move(10,150)
+	self.w2.label1.move(170,15)
 	  
 	self.w2.button1=QPushButton(self.trUtf8("OK"), self.w2)
-	self.w2.button1.move(150,175)
+	self.w2.button1.move(120,10)
 	
 	self.w2.projlist1 = QListWidget(self.w2)
 	self.w2.projlist1.setFixedSize(300,75)
-	#self.w2.projlist1 = QComboBox(self.w2)
 	self.w2.projlist1.move(10,40)
 	
 	cur2.execute("SELECT projnumb,clientname,clientprojid,clientlocation FROM projdesc001")
@@ -81,9 +83,30 @@ class myguiapp(QWidget):
 	self.connect(self.w2.button1, SIGNAL("clicked()"), self.writeAllData)
 	
 	self.w2.qle1 = QLineEdit(self.w2)
+	self.w2.qle1.setFixedSize(100,25)
 	self.w2.qle1.move(10,10)
 
 	self.w2.qle1.textChanged[str].connect(self.onChanged)
+	
+	self.w2.buttonA=QPushButton(self.trUtf8("a"), self.w2)
+	self.w2.buttonA.setFixedSize(20,20)
+	self.w2.buttonA.move(10,120)
+	self.connect(self.w2.buttonA, SIGNAL("clicked()"), self.buttonA)
+
+	if (clickonkeyb==True):
+	  self.w2.qle1.update()
+	  self.w2.qle1.repaint()
+	  qApp.processEvents()
+	  qApp.flush()
+	  print "patate!!!!"
+	  clickonkeyb = False
+
+	self.connect(self.w2.buttonA, SIGNAL("released()"), self.buttonArel)
+
+	self.w2.buttonSpace=QPushButton(self.trUtf8("sp"), self.w2)
+	self.w2.buttonSpace.setFixedSize(25,20)
+	self.w2.buttonSpace.move(200,200)
+	self.connect(self.w2.buttonSpace, SIGNAL("clicked()"), self.buttonSpace)
 
     def readAllData(self):
 	global readdata
@@ -147,10 +170,21 @@ class myguiapp(QWidget):
 	    tmpstr1 += item2.decode('latin-1').encode("utf-8") + " / "
 	  self.w2.projlist1.addItem(self.trUtf8(tmpstr1))
 
+    def buttonA(self):
+	self.w2.qle1.setText(self.w2.qle1.text()+'a')
 
+    def buttonArel(self):
+	global clickonkeyb
+	clickonkeyb=True
+	print "c'est chaud..."
+	#self.w2.qle1.update()
+	#self.w2.qle1.repaint()
+	#QApplication.processEvents()
+	#qApp.processEvents()
+	#qApp.flush()
 
-
-
+    def buttonSpace(self):
+	self.w2.qle1.setText(self.w2.qle1.text()+' ')
 
 
 

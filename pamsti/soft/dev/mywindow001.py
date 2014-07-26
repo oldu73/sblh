@@ -25,8 +25,6 @@ cur4 = db.cursor()
 projlist = None
 readdata = None
 
-clickonkeyb = False
-
 widwith = 320
 widheight = 240
 
@@ -45,7 +43,7 @@ class myguiapp(QWidget):
         self.w1label1.move(10,10)
 
         self.w1button2=QPushButton(self.trUtf8("Quit"), self)
-        self.w1button2.move(10,215)
+        self.w1button2.move(10,205)
         
         self.setFixedSize(widwith,widheight)
         self.move(hpos,vpos)
@@ -65,6 +63,7 @@ class myguiapp(QWidget):
 	self.w2.label1.move(170,15)
 	  
 	self.w2.button1=QPushButton(self.trUtf8("OK"), self.w2)
+	self.w2.button1.setFixedSize(40,25)
 	self.w2.button1.move(120,10)
 	
 	self.w2.projlist1 = QListWidget(self.w2)
@@ -92,16 +91,6 @@ class myguiapp(QWidget):
 	self.w2.buttonA.setFixedSize(20,20)
 	self.w2.buttonA.move(10,120)
 	self.connect(self.w2.buttonA, SIGNAL("clicked()"), self.buttonA)
-
-	if (clickonkeyb==True):
-	  self.w2.qle1.update()
-	  self.w2.qle1.repaint()
-	  qApp.processEvents()
-	  qApp.flush()
-	  print "patate!!!!"
-	  clickonkeyb = False
-
-	self.connect(self.w2.buttonA, SIGNAL("released()"), self.buttonArel)
 
 	self.w2.buttonSpace=QPushButton(self.trUtf8("sp"), self.w2)
 	self.w2.buttonSpace.setFixedSize(25,20)
@@ -172,16 +161,6 @@ class myguiapp(QWidget):
 
     def buttonA(self):
 	self.w2.qle1.setText(self.w2.qle1.text()+'a')
-
-    def buttonArel(self):
-	global clickonkeyb
-	clickonkeyb=True
-	print "c'est chaud..."
-	#self.w2.qle1.update()
-	#self.w2.qle1.repaint()
-	#QApplication.processEvents()
-	#qApp.processEvents()
-	#qApp.flush()
 
     def buttonSpace(self):
 	self.w2.qle1.setText(self.w2.qle1.text()+' ')

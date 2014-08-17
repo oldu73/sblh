@@ -108,7 +108,7 @@ class myguiapp(QWidget):
 	  cur1.execute("SELECT firstname, lastname FROM person001 WHERE rfid = %s",readdata)
 	  person = cur1.fetchone()
 	  # person is a tuple
-	  self.w2.label1.setText(self.trUtf8(str(person[0]) + " " + str(person[1])))  
+	  self.w2.label1.setText(self.trUtf8(str(person[0]).decode('latin-1').encode("utf-8") + " " + str(person[1]).decode('latin-1').encode("utf-8")))
 	  self.w2.show()
 	  self.w2.raise_()
 	  self.w2.activateWindow()
@@ -131,6 +131,11 @@ class myguiapp(QWidget):
 	self.w2.close()
           
     def closeAll(self):
+      
+	fdw = os.open(myfifow, os.O_WRONLY)
+	os.write(fdw, "Quit\0")
+	os.close(fdw)
+      
 	# Close all cursors
 	cur1.close()
 	cur2.close()
@@ -138,7 +143,7 @@ class myguiapp(QWidget):
 	cur4.close()
 	# Close databases
 	db.close()
-	
+
 	os.close(self.fdr)
 	qApp.quit()
 

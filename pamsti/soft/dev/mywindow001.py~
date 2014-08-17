@@ -25,8 +25,6 @@ cur4 = db.cursor()
 projlist = None
 readdata = None
 
-clickonkeyb = False
-
 widwith = 320
 widheight = 240
 
@@ -94,16 +92,6 @@ class myguiapp(QWidget):
 	self.w2.buttonA.move(10,120)
 	self.connect(self.w2.buttonA, SIGNAL("clicked()"), self.buttonA)
 
-	if (clickonkeyb==True):
-	  self.w2.qle1.update()
-	  self.w2.qle1.repaint()
-	  qApp.processEvents()
-	  qApp.flush()
-	  print "patate!!!!"
-	  clickonkeyb = False
-
-	self.connect(self.w2.buttonA, SIGNAL("released()"), self.buttonArel)
-
 	self.w2.buttonSpace=QPushButton(self.trUtf8("sp"), self.w2)
 	self.w2.buttonSpace.setFixedSize(25,20)
 	self.w2.buttonSpace.move(200,200)
@@ -120,7 +108,7 @@ class myguiapp(QWidget):
 	  cur1.execute("SELECT firstname, lastname FROM person001 WHERE rfid = %s",readdata)
 	  person = cur1.fetchone()
 	  # person is a tuple
-	  self.w2.label1.setText(self.trUtf8(str(person[0]) + " " + str(person[1])))  
+	  self.w2.label1.setText(self.trUtf8(str(person[0]).decode('latin-1').encode("utf-8") + " " + str(person[1]).decode('latin-1').encode("utf-8")))
 	  self.w2.show()
 	  self.w2.raise_()
 	  self.w2.activateWindow()
@@ -128,7 +116,8 @@ class myguiapp(QWidget):
     def writeAllData(self):
 	global projlist,readdata
 	fdw = os.open(myfifow, os.O_WRONLY)
-	os.write(fdw, "Ok\0")
+	#os.write(fdw, "Ok\0")
+	os.write(fdw, "Quit\0")
 	os.close(fdw)
 
 	try:
@@ -143,16 +132,21 @@ class myguiapp(QWidget):
 	self.w2.close()
           
     def closeAll(self):
+      
+	fdw1 = os.open(myfifow, os.O_WRONLY)
+	os.write(fdw1, "Quit\0")
+	os.close(fdw1)
+      
 	# Close all cursors
-	cur1.close()
-	cur2.close()
-	cur3.close()
-	cur4.close()
+	#cur1.close()
+	#cur2.close()
+	#cur3.close()
+	#cur4.close()
 	# Close databases
-	db.close()
+	#db.close()
 	
-	os.close(self.fdr)
-	qApp.quit()
+	#os.close(self.fdr)
+	#qApp.quit()
 
     def onChanged(self, text):
 	global projlist
@@ -173,16 +167,6 @@ class myguiapp(QWidget):
 
     def buttonA(self):
 	self.w2.qle1.setText(self.w2.qle1.text()+'a')
-
-    def buttonArel(self):
-	global clickonkeyb
-	clickonkeyb=True
-	print "c'est chaud..."
-	#self.w2.qle1.update()
-	#self.w2.qle1.repaint()
-	#QApplication.processEvents()
-	#qApp.processEvents()
-	#qApp.flush()
 
     def buttonSpace(self):
 	self.w2.qle1.setText(self.w2.qle1.text()+' ')

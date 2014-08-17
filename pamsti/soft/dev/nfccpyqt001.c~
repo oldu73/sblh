@@ -1,0 +1,135 @@
+// To compile this file:
+// $ gcc -o filename filename.c -lnfc
+
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif // HAVE_CONFIG_H
+
+#include <err.h>
+#include <nfc/nfc.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdio.h> 
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_BUF 1024
+
+char* convert_to_hex(const uint8_t *pbtData, const size_t szBytes)
+{
+  size_t  szPos;
+  
+  char* buf_str=(char*) malloc (2*szBytes+1);
+  char* buf_ptr=buf_str;
+
+  for (szPos = 0; szPos < szBytes; szPos++) {
+    buf_ptr+=sprintf(buf_ptr, "%02x", pbtData[szPos]);
+  }
+  
+  *(buf_ptr + 1) = '\0';
+  
+  return buf_str;
+}
+
+int  main(int argc, const char *argv[])
+{
+	system("clear");
+	
+	int fdw, fdr, i;
+	char buf[MAX_BUF];
+	char* textInitCon = "Hi";
+	char* myfifow = "ctopyfifo";
+	char* myfifor = "pytocfifo";
+	char* rfidstr;
+
+	nfc_device *pnd;
+	nfc_target nt;
+
+	// Allocate only a pointer to nfc_context
+	nfc_context *context;
+
+	// Initialize libnfc and set the nfc_context
+	nfc_init(&context);
+
+	// Display libnfc version
+	const char *acLibnfcVersion = nfc_version();
+	printf("%s uses libnfc %s\n", argv[0], acLibnfcVersion);
+
+	// Open, using the first available NFC device.
+	pnd = nfc_open(context, NULL);
+
+	if (pnd == NULL) {
+	  warnx("ERROR: %s", "Unable to open NFC device.");
+	  return EXIT_FAILURE;
+	}
+	// Set opened NFC device to initiator mode
+	if (nfc_initiator_init(pnd) < 0) {
+	  nfc_perror(pnd, "nfc_initiator_init");
+	  exit(EXIT_FAILURE);
+	}
+
+	printf("NFC reader: %s opened...\n", nfc_device_get_name(pnd));
+
+	/* Create fifos */
+	mkfifo(myfifow,0666); 
+	mkfifo(myfifor,0666);
+		
+	/* Send Hi to pipe */
+	printf("Writing init string TO pipe: >> %s << ...\n", textInitCon);
+	fdw = open(myfifow, O_WRONLY);
+	write(fdw, textInitCon, sizeof(textInitCon));
+	close(fdw);
+
+	/* Wait Ok from pipe */
+	fdr = open(myfifor, O_RDONLY);
+	read(fdr, buf, MAX_BUF);
+	printf("Received init string FROM pipe: >> %s << ...\n", buf);
+	close(fdr);
+	
+	if (strcmp(buf, "Ok") == 0) {
+		printf("Init ok, start pushing ...\n\n");
+		
+		//while (strcmp(buf, "Quit") != 0) {
+		while (true) {		  
+			// Poll for a ISO14443A (MIFARE) tag
+			const nfc_modulation nmMifare = {
+			  .nmt = NMT_ISO14443A,
+			  .nbr = NBR_106,
+			};
+			if (nfc_initiator_select_passive_target(pnd, nmMifare, NULL, 0, &nt) > 0) {
+			  rfidstr = convert_to_hex(nt.nti.nai.abtUid, nt.nti.nai.szUidLen);
+			}
+	
+			printf("Writing: >> %s << to pipe...\n", rfidstr);
+			fdw = open(myfifow, O_WRONLY);
+			write(fdw, rfidstr, strlen(rfidstr));
+			close(fdw);
+			
+			fdr = open(myfifor, O_RDONLY);
+			read(fdr, buf, MAX_BUF);
+			printf("Received string FROM pipe: >> %s << ...\n", buf);
+			close(fdr);
+		}
+		
+		printf("\nstop pushing ... program terminated!\n\n");
+		
+	} else {
+		printf("Init failed, abort!\n");
+	}
+
+	/* Remove fifos */
+	unlink(myfifow);
+	unlink(myfifor);
+	
+	// Close NFC device
+	nfc_close(pnd);
+	// Release the context
+	nfc_exit(context);
+	return EXIT_SUCCESS;
+}
+
+
+
+

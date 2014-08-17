@@ -1,0 +1,4 @@
+Compile option with libnfc
+
+
+// $ gcc -o filename filename.c -lnfc
